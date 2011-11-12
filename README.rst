@@ -68,6 +68,11 @@ create_<blueprint_name>
     This method acts the same as the build method described above, but saves
     the model instance to the database before returning it.
 
+If your blueprint is named ``default``, the factory will also have a
+``build()`` and ``create()`` method, which are aliases for
+``build_default()`` and ``create_default()``.
+
+
 Now, we can create an instance of ``BlogFactory`` and start generating test
 data::
 

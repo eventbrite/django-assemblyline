@@ -6,6 +6,8 @@ import re
 __all__ = ['Factory', 'blueprint']
 
 
+DEFAULT_BLUEPRINT_NAME = 'default'
+
 class FactoryMetaclass(type):
     def __new__(meta, classname, bases, class_dict):
         new_methods = {}
@@ -41,6 +43,11 @@ class FactoryMetaclass(type):
 
                 new_methods['build_' + key] = _make_method()
                 new_methods['create_' + key] = _make_method(save=True)
+
+                if key == DEFAULT_BLUEPRINT_NAME:
+                    new_methods['build'] = _make_method()
+                    new_methods['create'] = _make_method(save=True)
+
 
         class_dict.update(new_methods)
         return type.__new__(meta, classname, bases, class_dict)
