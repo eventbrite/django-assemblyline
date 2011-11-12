@@ -1,9 +1,45 @@
-from functools import wraps
+from functools import wraps, partial
 
 __all__ = ['Factory', 'blueprint']
 
 
 DEFAULT_BLUEPRINT_NAME = 'default'
+
+
+def set_related(instance, related_fields):
+
+    model_cls = instance.__class__
+
+    # call the related fields and set them
+    for field in related_fields:
+        model_field = model_cls._meta.get_field_by_name(
+            field)[0]
+
+        if isinstance(related_fields[field], partial):
+            related_fields[field] = (related_fields[field],)
+
+        for related_partial in related_fields[field]:
+
+            related_partial(
+                related_fields={
+                    model_field.field.name: instance,
+                    },
+                )
+
+
+def create_related(instance, child_related, save=True, related_fields=None):
+
+    related_fields = related_fields or {}
+    for field_name in related_fields:
+        setattr(instance, field_name, related_fields[field_name])
+
+    # import pdb;pdb.set_trace()
+    if save:
+        instance.save()
+
+        set_related(instance, child_related)
+
+    return instance
 
 
 class FactoryMetaclass(type):
@@ -15,20 +51,56 @@ class FactoryMetaclass(type):
             if hasattr(val, '_factories_blueprint') and callable(val):
                 # Found a blueprint, create a 'build_' and 'create_' method for
                 # it.
-                def _make_method(save=False):
+                def _make_method(save=False, related=False):
+                    from django.db.models.fields import FieldDoesNotExist
+
                     def _build_method(self, blueprint=val, model_cls=val._factories_model, **kwargs):
                         properties = blueprint(self)
                         properties.update(kwargs)
 
-                        # Interpolate property values into strings.
+                        # distinguish between direct field sets and related field sets
+                        local_fields = []
+                        related_fields = []
                         for property in properties:
+                            try:
+                                if model_cls._meta.get_field_by_name(property)[2]:
+                                    # this is a direct (local) field
+                                    local_fields.append(property)
+                                else:
+                                    related_fields.append(property)
+                            except FieldDoesNotExist:
+                                print property
+                                local_fields.append(property)
+
+                        # Interpolate local property values into strings.
+                        for property in local_fields:
                             if isinstance(properties[property], basestring):
                                 properties[property] = properties[property] % properties
 
-                        # Create the instance of the model and maybe save it.
-                        instance = model_cls(**properties)
+                        # Create the instance of the model with local fields
+                        instance = model_cls(
+                            **dict(
+                                (field, properties[field])
+                                for field in local_fields
+                            )
+                        )
+
+                        # save it if requested -- do this before
+                        # building related objects so we have an ID
                         if save:
                             instance.save()
+
+                        # return the related callable if requested
+                        if related:
+                            return partial(create_related, instance,
+                                           dict((f, properties[f]) for f in related_fields)
+                                           )
+
+                        # call the related fields and set them
+                        set_related(instance,
+                                    dict((f, properties[f]) for f in related_fields)
+                                    )
+
                         return instance
 
                     # Set the docstring for the new method.
@@ -41,11 +113,13 @@ class FactoryMetaclass(type):
 
                 new_methods['build_' + key] = _make_method()
                 new_methods['create_' + key] = _make_method(save=True)
+                new_methods['related_' + key] = _make_method(related=True)
 
                 if key == DEFAULT_BLUEPRINT_NAME:
+                    # also add default methods
                     new_methods['build'] = _make_method()
                     new_methods['create'] = _make_method(save=True)
-
+                    new_methods['related'] = _make_method(related=True)
 
         class_dict.update(new_methods)
         return type.__new__(meta, classname, bases, class_dict)
