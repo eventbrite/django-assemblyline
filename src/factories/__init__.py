@@ -1,6 +1,7 @@
-from django.db.models import get_model
 from functools import wraps
-import re
+
+from django.db.models import get_model
+from django.db.models.base import ModelBase
 
 
 __all__ = ['Factory', 'blueprint']
@@ -88,13 +89,16 @@ def blueprint(model):
             return func(*args, **kwargs)
 
         # Get the model class from the ``model`` string.
-        try:
-            app_name, model_name = model.split('.')
-        except ValueError:
-            raise BadModelFormatError(model)
-        model_cls = get_model(app_name, model_name)
-        if not model_cls:
-            raise ModelImportError(app_name, model_name)
+        if isinstance(model, ModelBase):
+            model_cls = model
+        else:
+            try:
+                app_name, model_name = model.split('.')
+            except ValueError:
+                raise BadModelFormatError(model)
+            model_cls = get_model(app_name, model_name)
+            if not model_cls:
+                raise ModelImportError(app_name, model_name)
 
         # Add some attributes to the wrapped method for use by
         # FactoryMetaclass.
