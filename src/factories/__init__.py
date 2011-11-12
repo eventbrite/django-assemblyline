@@ -1,13 +1,10 @@
 from functools import wraps
 
-from django.db.models import get_model
-from django.db.models.base import ModelBase
-
-
 __all__ = ['Factory', 'blueprint']
 
 
 DEFAULT_BLUEPRINT_NAME = 'default'
+
 
 class FactoryMetaclass(type):
     def __new__(meta, classname, bases, class_dict):
@@ -87,6 +84,9 @@ def blueprint(model):
         @wraps(func)
         def _wrapped_func(*args, **kwargs):
             return func(*args, **kwargs)
+
+        from django.db.models import get_model
+        from django.db.models.base import ModelBase
 
         # Get the model class from the ``model`` string.
         if isinstance(model, ModelBase):

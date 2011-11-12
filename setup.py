@@ -9,5 +9,9 @@ setup(
     author = "Michael Hampton",
     packages = find_packages("src"),
     package_dir = {'': 'src'},
-    install_requires = ['setuptools'],
+    install_requires = [
+        'setuptools',
+        'django',
+        ],
+    test_suite = "factories.runtests.runtests",
 )

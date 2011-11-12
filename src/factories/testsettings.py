@@ -6,4 +6,5 @@ DATABASES = {
     },
 }
 
+SITE_ID = 'testing'
 INSTALLED_APPS = ['factories', 'django.contrib.flatpages']
