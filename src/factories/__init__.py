@@ -61,7 +61,13 @@ class FactoryMetaclass(type):
                         # distinguish between direct field sets and related field sets
                         local_fields = []
                         related_fields = []
-                        for property in properties:
+                        for property in properties.keys():
+
+                            if property not in model_cls._meta.get_all_field_names():
+                                if property[-4:] == '_set' and property[:-4] in model_cls._meta.get_all_field_names():
+                                    properties[property[:-4]] = properties[property]
+                                    property = property[:-4]
+
                             try:
                                 if model_cls._meta.get_field_by_name(property)[2]:
                                     # this is a direct (local) field

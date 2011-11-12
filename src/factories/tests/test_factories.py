@@ -79,3 +79,24 @@ class FactoriesTests(TestCase):
                          'Foo')
         self.assertEqual(user.testmodel_set.all()[0].optional,
                          '')
+
+    def testRelatedSetSyntax(self):
+
+        user_factory = UserFactory()
+        model_factory = ModelFactory()
+
+        user = user_factory.create(
+            email='related@example.com',
+            testmodel_set = [
+                model_factory.related(required='Foo'),
+                model_factory.related(required='Bar'),
+            ],
+        )
+
+        self.assertEqual(user.email, 'related@example.com')
+        self.assertEqual(user.testmodel_set.all().count(),
+                         2)
+        self.assertEqual(user.testmodel_set.all()[0].required,
+                         'Foo')
+        self.assertEqual(user.testmodel_set.all()[1].required,
+                         'Bar')
