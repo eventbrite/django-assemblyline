@@ -3,7 +3,7 @@ Tests for FlatPageFactory.
 """
 from django.test import TestCase
 from django.contrib.flatpages.models import FlatPage
-from factories.flat_pages import FlatPageFactory
+from assemblyline.flat_pages import FlatPageFactory
 
 
 class FlatPageFactoryTests(TestCase):
@@ -29,7 +29,7 @@ class FlatPageFactoryTests(TestCase):
     def test_create_flat_page(self):
         """
         The ``create_flat_page`` method should build and save a FlatPage
-        object.
+        object.factory
         """
         flat_page = self.factory.create_flat_page()
         self.assertTrue(isinstance(flat_page, FlatPage))

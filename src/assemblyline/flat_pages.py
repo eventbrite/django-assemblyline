@@ -1,7 +1,7 @@
 """
 Factory for flatpages app.
 """
-from factories import Factory, blueprint
+from assemblyline import Factory, blueprint
 
 
 class FlatPageFactory(Factory):

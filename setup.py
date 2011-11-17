@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name = "django-factories",
+    name = "django-assemblyline",
     version = "0.1",
     url = "",
     license = "MIT",
@@ -13,5 +13,5 @@ setup(
         'setuptools',
         'django',
         ],
-    test_suite = "factories.runtests.runtests",
+    test_suite = "assemblyline.runtests.runtests",
 )

@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from factories import Factory, blueprint
-from factories.models import TestUser, TestModel
+from assemblyline import Factory, blueprint
+from assemblyline.models import TestUser, TestModel
 
 
 class UserFactory(Factory):
