@@ -11,7 +11,7 @@ setup(
     package_dir = {'': 'src'},
     install_requires = [
         'setuptools',
-        'django',
+        'django>=1.3',
         ],
     test_suite = "assemblyline.runtests.runtests",
 )
